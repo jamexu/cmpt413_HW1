@@ -27,6 +27,12 @@ class unigram_pdist(object):
             self.counts1w_dist[key] = value
             self.word_sum += value
 
+    def get_probability(self, word):
+        if self.counts1w_dist.get(word):
+            return self.counts1w_dist.get(word)/self.word_sum
+        else:
+            return 1/self.word_sum
+
 
 # Class for bigram pdist.  Can it be implemented similarly to unigram?
 class bigram_pdist(object):
@@ -61,12 +67,12 @@ class Memo():
         return array
 
 
-def memo_segmenter(line):
+def memo_segmenter(line, pdist):
     memos = [None for i in range(len(line))]
     base = Memo(1, None, "beginning")
 
     # do the first entry manually
-    memos[0] = Memo(arg_max([line[0]]), base, line[0])
+    memos[0] = Memo(pdist.get_probability(line[0]), base, line[0])
 
     for i in range(1, len(line)):
         best_word = ""
@@ -75,7 +81,7 @@ def memo_segmenter(line):
         for j in range(i):
             word = line[j+1:i+1]
             pred = memos[j]
-            value = arg_max(word, pred)
+            value = arg_max(word, pred, pdist)
             if value > best_value or best_value == None:
                 best_word = word
                 best_pred = pred
@@ -93,17 +99,24 @@ def memo_segmenter(line):
 #       You can assume that this has already been calculated
 #       pred.word is the previous word in the segmentation (use for calculating with bigrams)
 #       pred.value is the probability of all previous words in this segmentation
-def arg_max(word, pred):
-    return 1
+def arg_max(word, pred, pdist):
+    return pdist.get_probability(word) * pred.value
 
 # MAIN FUNCTION STARTS HERE
 if __name__ == "__main__":
     # get commandline arguments
     args = opt_parser()
+    file = open(args.input)
+    uni_pdist = unigram_pdist(args.counts1w)
+
+    for line in file:
+        print memo_segmenter(line, uni_pdist)
+        break
+'''
     # Execute depending on which segmenter model
     if args.counts1w:
         uni_pdist = unigram_pdist(path)
     elif args.counts2w:
         pass
-
+'''
 
