@@ -14,10 +14,10 @@ def opt_parser():
 # Also sums the total number of word counts in order to generate probability
 class unigram_pdist(object):
     # Create a python dictionary to store unigram counts and keep track of total word counts
-    def __init__(self, unigram_counts):
+    def __init__(self, unigram_file):
         self.counts1w_dist = {}
         self.word_sum = 0
-        self.import_unigram(unigram_counts)
+        self.import_unigram(unigram_file)
 
     # Create a python dictionary to store unigram counts and keep track of total word counts
     def import_unigram(self, input_file):
@@ -28,6 +28,16 @@ class unigram_pdist(object):
             self.word_sum += value
 
 
+# Class for bigram pdist.  Can it be implemented similarly to unigram?
+class bigram_pdist(object):
+    def __init__(self, bigram_file):
+        pass
+        '''
+        if parsing bigram file, word1 and word2 seperated by one space, count is separated by a tab
+        word1 = line.split(" ")[0].strip()
+        word2 = line.split(" ")[1].split("\t")[0].strip()
+        count = float(line.split(" ")[1].split("\t")[1].strip())
+        '''
 
 # will return an array of strings
 # representing the segmentation of the input line 
