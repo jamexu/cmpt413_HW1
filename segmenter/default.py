@@ -30,9 +30,6 @@ class Pdist(dict):
         elif len(key) == 1: return self.missingfn(key, self.N)
         else: return None
 
-
-
-
 # will return an array of strings
 # representing the segmentation of the input line 
 # which maximizes the return value of the function arg_max
@@ -61,17 +58,16 @@ def memo_segmenter(line):
     base = Memo(1, None, "")
 
     # do the first entry manually
-    memos[0] = Memo(arg_max([line[0]],None), base, line[0])
+    memos[0] = Memo(bigram_arg_max([line[0]],None), base, line[0])
 
     for i in range(1, len(line)):
         best_word = ""
         best_pred = None
         best_value = None
-        for j in range(max(0,i-2),i+1):
+        for j in range(max(0,i-5),i+1):
             characters=[]
             if j==i:
                 characters.append(line[i])
-                word = line[i]
             else:
                 characters= line[j:i+1]
             combined_word=''
@@ -83,7 +79,8 @@ def memo_segmenter(line):
                 pred=base
             else:
                 pred=memos[j-1]
-            value = arg_max(word_arr, pred)
+            #value = arg_max(word_arr, pred)
+            value =bigram_arg_max(word_arr, pred)
             if value > best_value or best_value == None:
                 best_word = combined_word
                 best_pred = pred
@@ -93,10 +90,15 @@ def memo_segmenter(line):
     return memos[-1].get_array()
 
 
+Pw1  = Pdist(opts.counts1w)
+N=sum(Pw1.values())
+print N
+L=len(Pw1)
+Pw2 = Pdist(opts.counts2w)
+N2=sum(Pw2.values())
+L2=len(Pw2)
+print N2
 
-Pw  = Pdist(opts.counts1w)
-N=sum(Pw.values())
-L=len(Pw)
 
 
 
@@ -117,22 +119,38 @@ def arg_max(word, pred):
     else:
         p=pred.value
         return (Jelinek(word)+p)
+
+
+def bigram_arg_max(word,pred):
+    if pred==None:
+        return Jelinek(word,pred)
+    if pred.value==1:
+        return Jelinek(word,pred)
+    else:
+        arr=[]
+        givenword=pred.word
+        arr.append(givenword)
+        nextword = word[0]
+        arr.append(nextword)
+        return Jelinek(arr,pred)
+
+
+
+
 # Jelinek_smoothing
-# Takes an array of words and iteratively calculate the interpolated probability
-def Jelinek(arr):
+# Takes an array of words and recursively calculate the interpolated probability
+def Jelinek(arr,pred):
 
     if len(arr)==1:
-        p=math.log10(0.999999999999999*float(get_count(arr))/float(N) +0.000000000000001*(float(1)/float(N)))
-        return math.log10(0.999999999999999*float(get_count(arr))/float(N) +0.000000000000001*(float(1)/float(N)))
-    '''
-    else:
-        given_word =[]
-        next_word=[]
-        given_word.append(arr[0])
-        next_word.append(arr[1])
-        prob = 0.5*math.log10(get_count(arr)/get_count(prev_word))+0.5*Jelinek(get_count(next_word))
+        p=math.log10(0.5*float(get_count(arr))/float(N) +0.5*(float(1)/float(N)))
+        return math.log10(0.9999999999*float(get_count(arr))/float(N) +0.0000000001*(float(1)/float(N)))
+
+    elif len(arr)==2:
+        wi = []
+        wi.append(arr[1])
+        prob = math.log10(0.9999999999*(float(get_count(arr))/float(N2)/float(pow(10,pred.value)))+0.0000000001*float(pow(10,Jelinek(wi,None))))
         return prob
-    '''
+
 
 
 
@@ -140,27 +158,19 @@ def Jelinek(arr):
 # finds the count of a word
 def get_count(arr):
     if len(arr)==1:
-        if arr[0] in Pw.keys():
-            return Pw.get(arr[0])
+        if arr[0] in Pw1.keys():
+            return Pw1.get(arr[0])
         else:
             return 0
-    else:
-        return 1
+    elif len(arr)==2:
+        for i in arr:
+            bigram=" ".join(arr)
+        if bigram in Pw2.keys():
+            return Pw2.get(bigram)
+        else:
+            return 0
 
 
-def log_prob(word_seq_code):
-    if word_seq_code in Pw.keys():
-
-        f1=float(0.1+Pw.get(word_seq_code))
-        f2=float(0.1*L+N)
-
-        p= math.log10((f1)/(f2))
-
-        return p
-    else:
-        f2=float(0.1*L+N)
-        p = math.log10(0.1/f2)
-        return p
 
 old = sys.stdout
 sys.stdout = codecs.lookup('utf-8')[-1](sys.stdout)
@@ -171,19 +181,6 @@ with open(opts.input) as f:
         output = [i for i in utf8line]  # segmentation is one word per character in the input
         result= memo_segmenter(output)
         print " ".join(result)
-        '''
-        for i in range(0,len(result)):
-            result
 
-            if len(result[i])>1:
-                result_converted[i]=''
-                for j in result[i]:
-                    result_converted[i]=result_converted[i]+j[::-1]
-            else:
-                result_converted[i]=result[i][::-1]
-
-
-        print result_converted
-        '''
         #print " ".join(output)
 sys.stdout = old
