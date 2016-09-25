@@ -122,8 +122,8 @@ def arg_max(word, pred):
 def Jelinek(arr):
 
     if len(arr)==1:
-        p=math.log10(0.9999999999*float(get_count(arr))/float(N) +0.0000000001*(float(1)/float(N)))
-        return math.log10(0.9999999999*float(get_count(arr))/float(N) +0.0000000001*(float(1)/float(N)))
+        p=math.log10(0.999999999999999*float(get_count(arr))/float(N) +0.000000000000001*(float(1)/float(N)))
+        return math.log10(0.999999999999999*float(get_count(arr))/float(N) +0.000000000000001*(float(1)/float(N)))
     '''
     else:
         given_word =[]
