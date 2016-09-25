@@ -12,7 +12,7 @@ class Pdist(dict):
     "A probability distribution estimated from counts in datafile."
 
     def __init__(self, filename, sep='\t', N=None, missingfn=None):
-        self.maxlen = 0 
+        self.maxlen = 0
         for line in file(filename):
             (key, freq) = line.split(sep)
             try:
@@ -67,13 +67,15 @@ def memo_segmenter(line):
         best_word = ""
         best_pred = None
         best_value = None
-        for j in range(max(0,i-5),i+2):
-            if j==i+1:
+        for j in range(max(0,i-5),i+1):
+            characters=[]
+            if j==i:
+                characters.append(line[i])
                 word = line[i]
             else:
-                word = line[j:i+1]
+                characters= line[j:i+1]
             combined_word=''
-            for r in word:
+            for r in characters:
                 combined_word=combined_word+r[::-1]
             word_arr=[]
             word_arr.append(combined_word)
@@ -108,16 +110,19 @@ L=len(Pw)
 #       pred.value is the probability of all previous words in this segmentation
 
 def arg_max(word, pred):
-
-    smooth_prob= Jelinek(word)
-
-    return smooth_prob
-
+    if pred==None:
+        return Jelinek(word)
+    if pred.value==1:
+        return Jelinek(word)
+    else:
+        p=pred.value
+        return (Jelinek(word)+p)
 # Jelinek_smoothing
 # Takes an array of words and iteratively calculate the interpolated probability
 def Jelinek(arr):
 
     if len(arr)==1:
+        p=math.log10(0.5*float(get_count(arr))/float(N) +0.5*(float(1)/float(N)))
         return math.log10(0.5*float(get_count(arr))/float(N) +0.5*(float(1)/float(N)))
     '''
     else:
