@@ -1,6 +1,6 @@
 
 import sys, codecs, optparse, os, math, decimal
-import itertools
+
 
 optparser = optparse.OptionParser()
 optparser.add_option("-c", "--unigramcounts", dest='counts1w', default=os.path.join('data', 'count_1w.txt'), help="unigram counts")
@@ -31,12 +31,118 @@ class Pdist(dict):
         else: return None
 
 
-Pw  = Pdist(opts.counts1w)
 
+
+# will return an array of strings
+# representing the segmentation of the input line 
+# which maximizes the return value of the function arg_max
+
+# It will fill a L-long 1-dimensional array (where L is the length of line)
+# with Memo objects which contain a P value and a pointer to a predecessor
+# such that the ith entry will be the best possible P value for a the string from 0 to i
+
+class Memo():
+
+    def __init__(self, value, pred, word):
+        self.value = value
+        self.pred = pred
+        self.word = word
+
+    def get_array(self):
+        if self.pred == None:
+            return []
+        array = self.pred.get_array()
+        array.append(self.word)
+        return array
+
+
+def memo_segmenter(line):
+    memos = [None for i in range(len(line))]
+    base = Memo(1, None, "")
+
+    # do the first entry manually
+    memos[0] = Memo(arg_max([line[0]],None), base, line[0])
+
+    for i in range(1, len(line)):
+        best_word = ""
+        best_pred = None
+        best_value = None
+        for j in range(i+2):
+            if j==i+1:
+                word = line[i]
+            else:
+                word = line[j:i+1]
+            combined_word=''
+            for r in word:
+                combined_word=combined_word+r[::-1]
+            word_arr=[]
+            word_arr.append(combined_word)
+            if j==0:
+                pred=base
+            else:
+                pred=memos[j-1]
+            value = arg_max(word_arr, pred)
+            if value > best_value or best_value == None:
+                best_word = combined_word
+                best_pred = pred
+                best_value = value
+        memos[i] = Memo(best_value, best_pred, best_word)
+
+    return memos[-1].get_array()
+
+
+
+Pw  = Pdist(opts.counts1w)
 N=sum(Pw.values())
 L=len(Pw)
 
-# The smoothing is not correctly implemented yet
+
+
+# dummy function to test things out
+
+# the real function should calculate the probability of this segmentation using
+# word: a string representing that last word in the current segmentation
+# pred: (short for predecessor) an object representing all previous words in this segmentation
+#       You can assume that this has already been calculated
+#       pred.word is the previous word in the segmentation (use for calculating with bigrams)
+#       pred.value is the probability of all previous words in this segmentation
+
+def arg_max(word, pred):
+
+    smooth_prob= Jelinek(word)
+
+    return smooth_prob
+
+# Jelinek_smoothing
+# Takes an array of words and iteratively calculate the interpolated probability
+def Jelinek(arr):
+
+    if len(arr)==1:
+        return math.log10(0.5*float(get_count(arr))/float(N) +0.5*(float(1)/float(N)))
+    '''
+    else:
+        given_word =[]
+        next_word=[]
+        given_word.append(arr[0])
+        next_word.append(arr[1])
+        prob = 0.5*math.log10(get_count(arr)/get_count(prev_word))+0.5*Jelinek(get_count(next_word))
+        return prob
+    '''
+
+
+
+
+# finds the count of a word
+def get_count(arr):
+    if len(arr)==1:
+        if arr[0] in Pw.keys():
+            return Pw.get(arr[0])
+        else:
+            return 0
+    else:
+        return 1
+
+
 def log_prob(word_seq_code):
     if word_seq_code in Pw.keys():
 
@@ -51,108 +157,28 @@ def log_prob(word_seq_code):
         p = math.log10(0.1/f2)
         return p
 
-
-
-#for i in opts.counts1w
-#this is just to test if log_prob works
-#log_prob(u'\u53bf\u957f')
-
-
 old = sys.stdout
 sys.stdout = codecs.lookup('utf-8')[-1](sys.stdout)
 # ignoring the dictionary provided in opts.counts
-
-
-def segment(Dict,break_index,prob_memo): #Dict is dictionary of character sequence in utf-8
-
-    if (len(Dict)==0):
-        return 1
-
-    min_id = min (Dict.keys())  # this finds the index of the first character
-    max_id = max (Dict.keys())
-
-
-    #Memoization
-    if prob_memo[min_id]<0:
-        return prob_memo[min_id]
-
-
-    #Base cases
-    if (len(Dict)==1):
-            prob_memo[max_id]=log_prob(Dict[max_id])
-            return log_prob(Dict[max_id])
-
-
-    limit=min(3,len(Dict)) # this sets the word length limit
-    prob = -10000
-    dict_for_prob={}
-
-    for k in range(0,limit):
-        d1={}
-        d2={}
-        for j in Dict.keys():
-            if j<=min_id+k:
-                d1[j]=Dict[j]
-            else:
-                d2[j]=Dict[j]
-
-        # To find the probability of sequence of characters, combine each characters into a word
-        word=''
-        for r in d1.keys():
-            word=word+d1[r][::-1]
-
-
-        p=log_prob(word)+segment(d2,break_index,prob_memo)
-        dict_for_prob[k]=p
-
-        if p>prob:
-            prob=p
-
-    a=dict_for_prob[0]
-    break_k =0
-    for i in dict_for_prob.keys():
-        if dict_for_prob[i]>a:
-            a=dict_for_prob[i]
-            break_k =i
-    break_index[min_id+break_k]=-1
-
-    prob_memo[min_id]=prob
-
-    return prob
-
-
-
-
 with open(opts.input) as f:
     for line in f:
         utf8line = unicode(line.strip(), 'utf-8')
+        output = [i for i in utf8line]  # segmentation is one word per character in the input
+        result= memo_segmenter(output)
+        print " ".join(result)
+        '''
+        for i in range(0,len(result)):
+            result
 
-
-
-        dict ={}    # Dictionary of characters in a line. Keys are the positions of characters
-        prob_memo={}  #Dictionary for memoization of segment function. Keys are positions of cahracters
-        break_index={} #Dict of initial values 0's. Keys are positions of Characters. Change the value of key i to -1 if character position i and j need to be separated
-
-
-        j=0
-        for i in utf8line:
-            dict[j]=i
-            prob_memo[j]=0
-            break_index[j]=0
-            j=j+1
-
-
-        segment(dict,break_index,prob_memo)
-
-        result=[]
-        for i in dict.keys():
-            if break_index[i]==-1:
-                result.append(dict[i]+" ")
+            if len(result[i])>1:
+                result_converted[i]=''
+                for j in result[i]:
+                    result_converted[i]=result_converted[i]+j[::-1]
             else:
-                result.append(dict[i])
+                result_converted[i]=result[i][::-1]
 
-        print "".join(result)
 
-        #output = [i for i in utf8line]  # segmentation is one word per character in the input
+        print result_converted
+        '''
         #print " ".join(output)
 sys.stdout = old
