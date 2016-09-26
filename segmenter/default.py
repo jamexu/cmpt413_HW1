@@ -174,9 +174,8 @@ def Bigram_Jelinek(word,pred):
     unigram_count=float(get_uni_count(pred.value))
     unigram_prob= float(0.99999)*unigram_count/float(N) +float(0.00001)*(float(1)/float(N))
     if bigram_count!=0:
-        bigram_prob=float(bigram_count)/float(N2)/float(pow(2,pred.value))
-        #bigram_prob=float(bigram_count)/float(N2)-pow(2,pred.value)
-        return math.log(float(0.99999)*bigram_prob+float(0.00001)*unigram_prob,2)
+        bigram_prob=math.log(float(bigram_count)/float(N2),2)-pred.value
+        return math.log(0.00001*unigram_prob,2)+math.log(1+0.99999*(bigram_count/N2/(0.00001*unigram_prob))/pow(2,pred.value),2)
     else:
         return math.log(float(0.00001)*unigram_prob,2)
 
