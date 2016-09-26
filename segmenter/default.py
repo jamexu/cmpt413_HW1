@@ -64,7 +64,7 @@ def memo_segmenter(line):
         best_word = ""
         best_pred = None
         best_value = None
-        for j in range(max(0,i-5),i+1):
+        for j in range(max(0,i-2),i+1):
             characters=[]
             if j==i:
                 characters.append(line[i])
@@ -92,12 +92,11 @@ def memo_segmenter(line):
 
 Pw1  = Pdist(opts.counts1w)
 N=sum(Pw1.values())
-print N
 L=len(Pw1)
 Pw2 = Pdist(opts.counts2w)
 N2=sum(Pw2.values())
 L2=len(Pw2)
-print N2
+
 
 
 
@@ -123,16 +122,16 @@ def arg_max(word, pred):
 
 def bigram_arg_max(word,pred):
     if pred==None:
-        return Jelinek(word,pred)
+        return float(Jelinek(word,pred))
     if pred.value==1:
-        return Jelinek(word,pred)
+        return float(Jelinek(word,pred))
     else:
         arr=[]
         givenword=pred.word
         arr.append(givenword)
         nextword = word[0]
         arr.append(nextword)
-        return Jelinek(arr,pred)
+        return Jelinek(arr,pred)+pred.value
 
 
 
@@ -142,14 +141,20 @@ def bigram_arg_max(word,pred):
 def Jelinek(arr,pred):
 
     if len(arr)==1:
-        p=math.log10(0.5*float(get_count(arr))/float(N) +0.5*(float(1)/float(N)))
-        return math.log10(0.9999999999*float(get_count(arr))/float(N) +0.0000000001*(float(1)/float(N)))
+        return math.log((0.9999999999*float(get_count(arr))/float(N) +0.0000000001*(float(1)/float(N))),2)
 
     elif len(arr)==2:
         wi = []
         wi.append(arr[1])
-        prob = math.log10(0.9999999999*(float(get_count(arr))/float(N2)/float(pow(10,pred.value)))+0.0000000001*float(pow(10,Jelinek(wi,None))))
-        return prob
+        #bigram_prob=float(get_count(arr))/float(N2)/float(pow(10,pred.value))
+        unigram_prob=pow(2,Jelinek(wi,None))
+        bigram_count=get_count(arr)
+        if bigram_count!=0:
+            bigram_log_prob=math.log((float(bigram_count)/float(N2))-pred.value,2)
+            return math.log((float(0.9999999999)*pow(2,bigram_log_prob)+float(0.0000000001)*unigram_prob),2)
+        else:
+            return math.log(0.0000000001*unigram_prob ,2)
+
 
 
 
