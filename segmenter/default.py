@@ -64,23 +64,29 @@ def memo_segmenter(line):
         best_word = ""
         best_pred = None
         best_value = None
-        for j in range(max(0,i-4),i+1):
+        for j in range(max(0,i-2),i+1):
             characters=[]
             if j==i:
                 characters.append(line[i])
             else:
                 characters= line[j:i+1]
+
             combined_word=''
             for r in characters:
-                combined_word=combined_word+r[::-1]
+                combined_word=combined_word+r
+                #combined_word=combined_word+r[::-1]
+            '''
             word_arr=[]
             word_arr.append(combined_word)
+            '''
+
             if j==0:
                 pred=base
             else:
                 pred=memos[j-1]
             #value = arg_max(word_arr, pred)
-            value =bigram_arg_max(word_arr, pred)
+            #value =bigram_arg_max(word_arr, pred)
+            value =bigram_arg_max(combined_word, pred)
             if value > best_value or best_value == None:
                 best_word = combined_word
                 best_pred = pred
@@ -109,7 +115,7 @@ L2=len(Pw2)
 #       You can assume that this has already been calculated
 #       pred.word is the previous word in the segmentation (use for calculating with bigrams)
 #       pred.value is the probability of all previous words in this segmentation
-
+'''
 def arg_max(word, pred):
     if pred==None:
         return Jelinek(word)
@@ -119,25 +125,26 @@ def arg_max(word, pred):
         p=pred.value
         return (Jelinek(word)+p)
 
+'''
 
 def bigram_arg_max(word,pred):
     if pred==None:
-        return float(Jelinek(word,pred))
+        return float(Bigram_Jelinek(word,None))
     if pred.value==1:
-        return float(Jelinek(word,pred))
+        return float(Bigram_Jelinek(word,None))
     else:
         arr=[]
         givenword=pred.word
         arr.append(givenword)
-        nextword = word[0]
+        nextword = word
         arr.append(nextword)
-        return Jelinek(arr,pred)+pred.value
-
+        return Bigram_Jelinek(word,pred)+pred.value
 
 
 
 # Jelinek_smoothing
 # Takes an array of words and recursively calculate the interpolated probability
+'''
 def Jelinek(arr,pred):
 
     if len(arr)==1:
@@ -154,13 +161,44 @@ def Jelinek(arr,pred):
             return math.log((float(0.9999999999)*pow(2,bigram_log_prob)+float(0.0000000001)*unigram_prob),2)
         else:
             return math.log(0.0000000001*unigram_prob ,2)
+            '''
+
+def Bigram_Jelinek(word,pred):
+
+    if pred==None:
+        unigram_count=float(get_uni_count(word))
+        unigram_prob= float(0.99999)*unigram_count/float(N) +float(0.00001)*(float(1)/float(N))
+        return math.log(unigram_prob,2)
+
+    bigram_count=float(get_bi_count(word,pred))
+    unigram_count=float(get_uni_count(pred.value))
+    unigram_prob= float(0.99999)*unigram_count/float(N) +float(0.00001)*(float(1)/float(N))
+    if bigram_count!=0:
+        bigram_prob=float(bigram_count)/float(N2)/float(pow(2,pred.value))
+        #bigram_prob=float(bigram_count)/float(N2)-pow(2,pred.value)
+        return math.log(float(0.99999)*bigram_prob+float(0.00001)*unigram_prob,2)
+    else:
+        return math.log(float(0.00001)*unigram_prob,2)
+
+
+def get_bi_count(word,pred):
+    bigram=pred.word+unicode(" ",'utf-8')+word
+    if bigram in Pw2.keys():
+        #print "/n"+"Found"+"/n"
+        return Pw2.get(bigram)
+    else:
+        return 0
+
+
+def get_uni_count(word):
+    if word in Pw1.keys():
+        return Pw1.get(word)
+    else:
+        return 0
 
 
 
-
-
-
-# finds the count of a word
+'''# finds the count of a word
 def get_count(arr):
     if len(arr)==1:
         if arr[0] in Pw1.keys():
@@ -168,12 +206,17 @@ def get_count(arr):
         else:
             return 0
     elif len(arr)==2:
-        for i in arr:
-            bigram=" ".join(arr)
+        #for i in arr:
+        #bigram=" ".join(arr)
+        #uni=unicode(bigram,'utf-8')
+
+        bigram=[arr[0]+unicode(" ", 'utf-8')+arr[1]][::-1]
         if bigram in Pw2.keys():
+            print "\nfound\n"
             return Pw2.get(bigram)
         else:
             return 0
+        '''
 
 
 
