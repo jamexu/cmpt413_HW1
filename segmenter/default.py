@@ -64,7 +64,7 @@ def memo_segmenter(line):
         best_word = ""
         best_pred = None
         best_value = None
-        for j in range(max(0,i-2),i+1):
+        for j in range(max(0,i-4),i+1):
             characters=[]
             if j==i:
                 characters.append(line[i])
