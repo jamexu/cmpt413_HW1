@@ -64,7 +64,7 @@ def memo_segmenter(line):
         best_word = ""
         best_pred = None
         best_value = None
-        for j in range(max(0,i-2),i+1):
+        for j in range(max(0,i-4),i+1):
             characters=[]
             if j==i:
                 characters.append(line[i])
@@ -128,7 +128,7 @@ def bigram_arg_max(word,pred):
 def Bigram_Jelinek(word,pred):
 
     unigram_count=float(get_uni_count(word))
-    unigram_prob= float(0.999999999)*unigram_count/float(N) +float(0.0000000001)*(float(1)/float(N))
+    unigram_prob= float(0.9999999999)*unigram_count/float(N) +float(0.0000000001)*(float(1)/float(N))
     if pred==None:
         return math.log(unigram_prob,2)
 
