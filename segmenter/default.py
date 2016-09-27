@@ -143,7 +143,7 @@ def Bigram_Jelinek(word,pred):
         bigram_prob=math.log(float(bigram_count)/float(N2),2)-pred.value
         return numpy.logaddexp2(math.log(0.9,2)+bigram_prob,math.log(0.1,2)+unigram_log_prob)
     else:
-        return math.log(float(0.01)*unigram_prob,2)
+        return math.log(float(0.1)*unigram_prob,2)
 
 
 def get_bi_count(word,pred):
