@@ -74,11 +74,6 @@ def memo_segmenter(line):
             combined_word=''
             for r in characters:
                 combined_word=combined_word+r
-                #combined_word=combined_word+r[::-1]
-            '''
-            word_arr=[]
-            word_arr.append(combined_word)
-            '''
 
             if j==0:
                 pred=base
@@ -115,17 +110,7 @@ L2=len(Pw2)
 #       You can assume that this has already been calculated
 #       pred.word is the previous word in the segmentation (use for calculating with bigrams)
 #       pred.value is the probability of all previous words in this segmentation
-'''
-def arg_max(word, pred):
-    if pred==None:
-        return Jelinek(word)
-    if pred.value==1:
-        return Jelinek(word)
-    else:
-        p=pred.value
-        return (Jelinek(word)+p)
 
-'''
 
 def bigram_arg_max(word,pred):
     if pred==None:
@@ -144,24 +129,6 @@ def bigram_arg_max(word,pred):
 
 # Jelinek_smoothing
 # Takes an array of words and recursively calculate the interpolated probability
-'''
-def Jelinek(arr,pred):
-
-    if len(arr)==1:
-        return math.log((0.9999999999*float(get_count(arr))/float(N) +0.0000000001*(float(1)/float(N))),2)
-
-    elif len(arr)==2:
-        wi = []
-        wi.append(arr[1])
-        #bigram_prob=float(get_count(arr))/float(N2)/float(pow(10,pred.value))
-        unigram_prob=pow(2,Jelinek(wi,None))
-        bigram_count=get_count(arr)
-        if bigram_count!=0:
-            bigram_log_prob=math.log((float(bigram_count)/float(N2))-pred.value,2)
-            return math.log((float(0.9999999999)*pow(2,bigram_log_prob)+float(0.0000000001)*unigram_prob),2)
-        else:
-            return math.log(0.0000000001*unigram_prob ,2)
-            '''
 
 def Bigram_Jelinek(word,pred):
 
@@ -198,26 +165,6 @@ def get_uni_count(word):
         return 0
 
 
-
-'''# finds the count of a word
-def get_count(arr):
-    if len(arr)==1:
-        if arr[0] in Pw1.keys():
-            return Pw1.get(arr[0])
-        else:
-            return 0
-    elif len(arr)==2:
-        #for i in arr:
-        #bigram=" ".join(arr)
-        #uni=unicode(bigram,'utf-8')
-
-        bigram=[arr[0]+unicode(" ", 'utf-8')+arr[1]][::-1]
-        if bigram in Pw2.keys():
-            print "\nfound\n"
-            return Pw2.get(bigram)
-        else:
-            return 0
-        '''
 
 
 
