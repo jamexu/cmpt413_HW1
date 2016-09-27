@@ -58,7 +58,7 @@ def memo_segmenter(line):
     base = Memo(1, None, "")
 
     # do the first entry manually
-    memos[0] = Memo(bigram_arg_max([line[0]],None), base, line[0])
+    memos[0] = Memo(bigram_arg_max(line[0],None), base, line[0])
 
     for i in range(1, len(line)):
         best_word = ""
@@ -92,14 +92,9 @@ def memo_segmenter(line):
 
 
 Pw1  = Pdist(opts.counts1w)
-N=sum(Pw1.values())
-L=len(Pw1)
+N=Pw1.N
 Pw2 = Pdist(opts.counts2w)
-N2=sum(Pw2.values())
-L2=len(Pw2)
-
-
-
+N2=Pw2.N
 
 
 # dummy function to test things out
