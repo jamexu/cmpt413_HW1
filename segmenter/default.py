@@ -1,5 +1,5 @@
 
-import sys, codecs, optparse, os, math, decimal
+import sys, codecs, optparse, os, math, decimal, numpy
 
 
 optparser = optparse.OptionParser()
@@ -167,15 +167,17 @@ def Bigram_Jelinek(word,pred):
 
     if pred==None:
         unigram_count=float(get_uni_count(word))
-        unigram_prob= float(0.99999)*unigram_count/float(N) +float(0.00001)*(float(1)/float(N))
+        unigram_prob= float(0.9999999999)*unigram_count/float(N) +float(0.0000000001)*(float(1)/float(N))
         return math.log(unigram_prob,2)
 
     bigram_count=float(get_bi_count(word,pred))
     unigram_count=float(get_uni_count(pred.value))
-    unigram_prob= float(0.99999)*unigram_count/float(N) +float(0.00001)*(float(1)/float(N))
+    unigram_prob =float(0.9999999999)*unigram_count/float(N) +float(0.0000000001)*(float(1)/float(N))
+    unigram_log_prob= math.log(float(0.9999999999)*unigram_count/float(N) +float(0.0000000001)*(float(1)/float(N)),2)
     if bigram_count!=0:
         bigram_prob=math.log(float(bigram_count)/float(N2),2)-pred.value
-        return math.log(0.00001*unigram_prob,2)+math.log(1+0.99999*(bigram_count/N2/(0.00001*unigram_prob))/pow(2,pred.value),2)
+        return numpy.logaddexp2(math.log(0.99999,2)+bigram_prob,math.log(0.00001,2)+unigram_log_prob)
+        #return math.log(0.00001*unigram_prob,2)+math.log(1+0.99999*(bigram_count/N2/(0.00001*unigram_prob))/pow(2,pred.value),2)
     else:
         return math.log(float(0.00001)*unigram_prob,2)
 
