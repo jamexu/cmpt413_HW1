@@ -148,7 +148,7 @@ def Bigram_Jelinek(word,pred):
 
 def get_bi_count(word,pred):
     bigram=pred.word+unicode(" ",'utf-8')+word
-    if bigram in Pw2.keys():
+    if bigram in Pw2:
         #print "/n"+"Found"+"/n"
         return Pw2.get(bigram)
     else:
@@ -156,7 +156,7 @@ def get_bi_count(word,pred):
 
 
 def get_uni_count(word):
-    if word in Pw1.keys():
+    if word in Pw1:
         return Pw1.get(word)
     else:
         return 0
