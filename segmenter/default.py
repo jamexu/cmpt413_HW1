@@ -132,21 +132,18 @@ def bigram_arg_max(word,pred):
 
 def Bigram_Jelinek(word,pred):
 
+    unigram_count=float(get_uni_count(word))
+    unigram_prob= float(0.9999999999)*unigram_count/float(N) +float(0.0000000001)*(float(1)/float(N))
     if pred==None:
-        unigram_count=float(get_uni_count(word))
-        unigram_prob= float(0.9999999999)*unigram_count/float(N) +float(0.0000000001)*(float(1)/float(N))
         return math.log(unigram_prob,2)
 
     bigram_count=float(get_bi_count(word,pred))
-    unigram_count=float(get_uni_count(pred.word))
-    unigram_prob =float(0.9999999999)*unigram_count/float(N) +float(0.0000000001)*(float(1)/float(N))
     unigram_log_prob= math.log(unigram_prob,2)
     if bigram_count!=0:
         bigram_prob=math.log(float(bigram_count)/float(N2),2)-pred.value
-        return numpy.logaddexp2(math.log(0.9999999999,2)+bigram_prob,math.log(0.0000000001,2)+unigram_log_prob)
-        
+        return numpy.logaddexp2(math.log(0.999999999,2)+bigram_prob,math.log(0.000000001,2)+unigram_log_prob)
     else:
-        return math.log(float(0.0000000001)*unigram_prob,2)
+        return math.log(float(0.000000001)*unigram_prob,2)
 
 
 def get_bi_count(word,pred):
